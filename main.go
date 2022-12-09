@@ -2,13 +2,21 @@ package main
 
 import (
 	"log"
-	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	flag "github.com/spf13/pflag"
 )
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TG_EDITOR_TELEGRAM_TOKEN"))
+	var token string
+	var parseMode string
+
+	flag.StringVar(&token, "token", "", "telegramm token")
+	flag.StringVar(&parseMode, "mode", "", "telegram parse mode")
+
+	flag.Parse()
+
+	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -29,7 +37,7 @@ func main() {
 			// Construct a new message from the given chat ID and containing
 			// the text that we received.
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			msg.ParseMode = "MarkdownV2"
+			msg.ParseMode = parseMode
 
 			text, markup := getFilesListMessage()
 			msg.ReplyMarkup = markup
