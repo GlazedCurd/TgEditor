@@ -10,9 +10,11 @@ import (
 func main() {
 	var token string
 	var parseMode string
+	var enableDebug bool
 
 	flag.StringVar(&token, "token", "", "telegramm token")
-	flag.StringVar(&parseMode, "mode", "", "telegram parse mode")
+	flag.StringVar(&parseMode, "mode", "HTML", "telegram parse mode")
+	flag.BoolVar(&enableDebug, "debug", false, "enable debug")
 
 	flag.Parse()
 
@@ -21,7 +23,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	bot.Debug = true
+	bot.Debug = enableDebug
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -74,7 +76,7 @@ func main() {
 				text,
 				markup,
 			)
-			upd.ParseMode = "MarkdownV2"
+			upd.ParseMode = parseMode
 			if _, err := bot.Request(upd); err != nil {
 				// TODO: из-за ошибки обновления файла
 				log.Printf("Error while processing text %s", err)
