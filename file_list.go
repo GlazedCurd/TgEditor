@@ -32,5 +32,5 @@ func getFilesListKeyboard() tgbotapi.InlineKeyboardMarkup {
 }
 
 func getFilesListMessage() (string, tgbotapi.InlineKeyboardMarkup) {
-	return "выберите файл", getFilesListKeyboard()
+	return "choose file for rendering:", getFilesListKeyboard()
 }

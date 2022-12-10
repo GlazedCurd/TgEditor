@@ -32,12 +32,10 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
-	// Loop through each update.
 	for update := range updates {
-		// Check if we've gotten a message update.
+
+		// For any simple message - render files list
 		if update.Message != nil {
-			// Construct a new message from the given chat ID and containing
-			// the text that we received.
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 			msg.ParseMode = parseMode
 
@@ -46,16 +44,13 @@ func main() {
 
 			msg.Text = text
 
-			// Send the message.
 			if _, err = bot.Send(msg); err != nil {
-				panic(err)
+				log.Printf("Error while sending message %s", err)
 			}
 		} else if update.CallbackQuery != nil {
-			// Respond to the callback query, telling Telegram to show the user
-			// a message with the data received.
 			callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
 			if _, err := bot.Request(callback); err != nil {
-				panic(err)
+				log.Printf("Error while processing callback %s", err)
 			}
 
 			dt := update.CallbackQuery.Data
@@ -78,7 +73,7 @@ func main() {
 			)
 			upd.ParseMode = parseMode
 			if _, err := bot.Request(upd); err != nil {
-				// TODO: из-за ошибки обновления файла
+				// TODO: add handling of "no changes error"
 				log.Printf("Error while processing text %s", err)
 			}
 

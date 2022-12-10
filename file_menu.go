@@ -11,8 +11,8 @@ import (
 func getFileMenu(filename string) tgbotapi.InlineKeyboardMarkup {
 	return tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Обновить", getFileButtonData(filename)),
-			tgbotapi.NewInlineKeyboardButtonData("Назад", getCancelButtonData()),
+			tgbotapi.NewInlineKeyboardButtonData("Reload", getFileButtonData(filename)),
+			tgbotapi.NewInlineKeyboardButtonData("Switch to anothre file", getCancelButtonData()),
 		),
 	)
 }

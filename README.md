@@ -20,3 +20,11 @@ Telegram supports several markup languages:
 
 ```--token``` - token from [bot father](https://core.telegram.org/bots/features#botfather) used to authorise TgEditor in telegram.
 
+Usage example: 
+
+Start bot in example folder from this repo:
+```
+example git:(main) ✗ ../TgEditor --token={YOUR_TELEGRAM_TOKEN} --mode=HTML
+```
+
+
