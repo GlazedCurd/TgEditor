@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -23,18 +24,31 @@ func main() {
 	var token string
 	var parseMode string
 	var allowedUsersList string
+	var workdirPath string
 	var enableDebug bool
 
 	flag.StringVar(&token, "token", "", "telegramm token")
 	flag.StringVar(&parseMode, "mode", "HTML", "telegram parse mode")
 	flag.StringVar(&allowedUsersList, "users", "", "users who are allowed to use this bot separated by semicolumns")
+	flag.StringVar(&workdirPath, "path", ".", "working folder for the bot")
 	flag.BoolVar(&enableDebug, "debug", false, "enable debug")
 
 	flag.Parse()
 
+	err := os.Chdir(workdirPath)
+	if err != nil {
+		log.Fatalf("Failed to use %s as working dir %s", workdirPath, err)
+	}
+
+	if currentdir, err := os.Getwd(); err == nil {
+		log.Printf("Starting bot in %s directory", currentdir)
+	} else {
+		log.Fatalf("Failed to get working directory %s", err)
+	}
+
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		log.Panic(err)
+		log.Fatalf("Failed to creat bot %s", err)
 	}
 
 	allowedUsers := parseTelegramUsers(allowedUsersList)
@@ -52,12 +66,13 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
+UPDATES_LOOP:
 	for update := range updates {
 		login := update.SentFrom().UserName
 		log.Printf("Got request from %s", login)
 		if _, ok := allowedUsers[update.SentFrom().UserName]; !ok {
 			log.Printf("Login %s was not found in white list, continue", login)
-			continue
+			continue UPDATES_LOOP
 		}
 
 		// For any simple message - render files list
@@ -84,11 +99,19 @@ func main() {
 			var text string
 			var markup tgbotapi.InlineKeyboardMarkup
 
+			if len(dt) == 0 {
+				log.Printf("No command found, continue")
+				continue UPDATES_LOOP
+			}
+
 			switch dt[0] {
 			case 'f':
 				text, markup = getFileMessage(dt)
-			default:
+			case 'c':
 				text, markup = getFilesListMessage()
+			default:
+				log.Printf("Unknown command")
+				continue UPDATES_LOOP
 			}
 
 			upd := tgbotapi.NewEditMessageTextAndMarkup(
