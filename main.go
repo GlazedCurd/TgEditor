@@ -2,18 +2,32 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	flag "github.com/spf13/pflag"
 )
 
+func parseTelegramUsers(usersLoginsList string) map[string]struct{} {
+	allowedUsers := make(map[string]struct{})
+	for _, login := range strings.Split(usersLoginsList, ";") {
+		if login == "" {
+			continue
+		}
+		allowedUsers[login] = struct{}{}
+	}
+	return allowedUsers
+}
+
 func main() {
 	var token string
 	var parseMode string
+	var allowedUsersList string
 	var enableDebug bool
 
 	flag.StringVar(&token, "token", "", "telegramm token")
 	flag.StringVar(&parseMode, "mode", "HTML", "telegram parse mode")
+	flag.StringVar(&allowedUsersList, "users", "", "users who are allowed to use this bot separated by semicolumns")
 	flag.BoolVar(&enableDebug, "debug", false, "enable debug")
 
 	flag.Parse()
@@ -21,6 +35,12 @@ func main() {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		log.Panic(err)
+	}
+
+	allowedUsers := parseTelegramUsers(allowedUsersList)
+
+	if len(allowedUsers) == 0 {
+		log.Fatalf("There are no users allowed to use this bot. Halting.")
 	}
 
 	bot.Debug = enableDebug
@@ -33,6 +53,12 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
+		login := update.SentFrom().UserName
+		log.Printf("Got request from %s", login)
+		if _, ok := allowedUsers[update.SentFrom().UserName]; !ok {
+			log.Printf("Login %s was not found in white list, continue", login)
+			continue
+		}
 
 		// For any simple message - render files list
 		if update.Message != nil {
